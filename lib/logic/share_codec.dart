@@ -5,7 +5,7 @@ import '../data/presets.dart';
 import '../models/models.dart';
 
 /// Formato dos códigos de compartilhamento (QR ou texto):
-///   TEQ1:<base64url(gzip(json))>
+///   `TEQ1:<base64url(gzip(json))>`
 /// O json tem {"k": tipo, "d": dados}. Comprimido, um evento com EQ, mapa e
 /// anotações cabe num QR code que a câmera lê com facilidade.
 const String prefixoCodigo = 'TEQ1:';

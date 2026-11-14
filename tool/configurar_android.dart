@@ -5,6 +5,7 @@
 //
 // Uso, na raiz do projeto:  dart run tool/configurar_android.dart
 // Pode rodar quantas vezes quiser: não duplica nada.
+// ignore_for_file: avoid_print
 import 'dart:io';
 
 void main() {

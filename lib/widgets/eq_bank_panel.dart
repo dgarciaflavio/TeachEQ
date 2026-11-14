@@ -249,16 +249,16 @@ class _EscalaPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const marcas = {12.0: '+12', 0.0: '0dB', -12.0: '-12'};
-    for (final e in marcas.entries) {
+    const marcas = [(12.0, '+12'), (0.0, '0dB'), (-12.0, '-12')];
+    for (final (valor, texto) in marcas) {
       final tp = TextPainter(
         text: TextSpan(
-          text: e.value,
+          text: texto,
           style: const TextStyle(color: EqBankPanel.corTexto, fontSize: 11),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      final y = _yDoValor(e.key, size.height) - tp.height / 2;
+      final y = _yDoValor(valor, size.height) - tp.height / 2;
       final x = alinharDireita ? size.width - tp.width - 3 : 3.0;
       tp.paint(canvas, Offset(x, y));
     }
