@@ -50,9 +50,14 @@ void main() {
 
   group('Áudio de treino', () {
     test('batida tem energia em todas as bandas da mesa', () {
-      final q = ProcessadorEspectro().adicionar(audioTreino(FonteTreino.musica)).last;
-      for (final v in q.bandasDbOitava) {
-        expect(v, greaterThan(-100));
+      // Média de potência no loop inteiro (um trecho isolado pode estar em
+      // silêncio numa banda, por exemplo entre duas batidas do chimbal).
+      final quadros = ProcessadorEspectro().adicionar(audioTreino(FonteTreino.musica));
+      for (var b = 0; b < 7; b++) {
+        final media = quadros.fold<double>(
+                0, (a, q) => a + math.pow(10, q.bandasDbOitava[b] / 10).toDouble()) /
+            quadros.length;
+        expect(10 * math.log(media) / math.ln10, greaterThan(-70), reason: 'banda $b');
       }
     });
 
