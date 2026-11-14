@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../logic/share_codec.dart';
 import '../models/models.dart';
 import '../state/app_state.dart';
 import '../widgets/mini_curve.dart';
+import 'channel_map_screen.dart';
 import 'eq_screen.dart';
+import 'qr_screens.dart';
 
 String _data(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -22,9 +25,14 @@ class ProjectsScreen extends StatelessWidget {
           title: const Text('Eventos'),
           actions: [
             IconButton(
-              tooltip: 'Importar evento',
+              tooltip: 'Ler QR code',
+              icon: const Icon(Icons.qr_code_scanner),
+              onPressed: () => lerQrEImportar(context),
+            ),
+            IconButton(
+              tooltip: 'Colar código',
               icon: const Icon(Icons.content_paste),
-              onPressed: () => _importar(context),
+              onPressed: () => colarCodigo(context),
             ),
           ],
         ),
@@ -143,18 +151,6 @@ class ProjectsScreen extends StatelessWidget {
           MaterialPageRoute(builder: (_) => ProjectDetailScreen(projeto: p)));
     }
   }
-
-  Future<void> _importar(BuildContext context) async {
-    final dados = await Clipboard.getData(Clipboard.kTextPlain);
-    final texto = dados?.text ?? '';
-    final p = texto.isEmpty ? null : AppState.instance.importarProjetoJson(texto);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(p == null
-          ? 'Copie o texto de um evento exportado e toque aqui de novo.'
-          : 'Evento "${p.nome}" importado.'),
-    ));
-  }
 }
 
 class ProjectDetailScreen extends StatefulWidget {
@@ -203,10 +199,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         appBar: AppBar(
           title: const Text('Evento'),
           actions: [
+            IconButton(
+              tooltip: 'Compartilhar por QR code',
+              icon: const Icon(Icons.qr_code),
+              onPressed: () => _acao('qr'),
+            ),
             PopupMenuButton<String>(
               onSelected: _acao,
               itemBuilder: (_) => const [
-                PopupMenuItem(value: 'exportar', child: Text('Copiar para compartilhar')),
+                PopupMenuItem(value: 'exportar', child: Text('Copiar código (WhatsApp)')),
                 PopupMenuItem(value: 'excluir', child: Text('Excluir evento')),
               ],
             ),
@@ -282,6 +283,51 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ],
             ),
             const SizedBox(height: 20),
+            Text('Mapa de canais', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              _p.mapa == null
+                  ? 'Nenhum mapa salvo neste evento.'
+                  : '${_p.mapa!.emUso} canais em uso.',
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (_p.mapa != null)
+                  FilledButton.tonalIcon(
+                    icon: const Icon(Icons.grid_view),
+                    label: const Text('Ver/editar mapa'),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ChannelMapScreen(
+                        mapaDoEvento: _p.mapa,
+                        titulo: 'Mapa: ${_p.nome}',
+                      ),
+                    )),
+                  ),
+                if (_p.mapa != null)
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.download),
+                    label: const Text('Usar como mapa atual'),
+                    onPressed: () {
+                      _s.substituirMapa(_p.mapa!);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Mapa do evento virou o mapa atual da mesa.')));
+                    },
+                  ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.save_outlined),
+                  label: const Text('Salvar mapa atual aqui'),
+                  onPressed: () {
+                    _p.mapa = _s.mapa.copia();
+                    _s.atualizarProjeto();
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: _notas,
               minLines: 3,
@@ -310,13 +356,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Future<void> _acao(String op) async {
-    if (op == 'exportar') {
+    if (op == 'qr') {
       _salvarCampos();
-      await Clipboard.setData(ClipboardData(text: _s.exportarProjetoJson(_p)));
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => QrShowScreen(titulo: _p.nome, pacote: codificarEvento(_p)),
+      ));
+    } else if (op == 'exportar') {
+      _salvarCampos();
+      // Código completo (com anotações): sem o limite de tamanho do QR.
+      final dados = _p.toJson()..remove('id');
+      final codigo = codificarEventoCompleto(dados);
+      await Clipboard.setData(ClipboardData(text: codigo));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
-                'Evento copiado. Cole no WhatsApp para enviar; quem receber copia o texto e importa na tela Eventos.')));
+                'Código copiado. Cole no WhatsApp; quem receber copia o texto e toca em "Colar código" na tela Eventos.')));
       }
     } else if (op == 'excluir') {
       final ok = await showDialog<bool>(

@@ -1,5 +1,5 @@
 // Ajusta a pasta android/ gerada pelo `flutter create` para o TeachEQ:
-//  - permissão de microfone (RECORD_AUDIO) no AndroidManifest.xml
+//  - permissões de microfone (RECORD_AUDIO) e câmera (CAMERA)
 //  - minSdk 23 (exigido pelo pacote record)
 //  - nome do app "TeachEQ"
 //
@@ -15,15 +15,20 @@ void main() {
   }
 
   var xml = manifest.readAsStringSync();
-  const permissao =
-      '<uses-permission android:name="android.permission.RECORD_AUDIO"/>';
-  if (!xml.contains('android.permission.RECORD_AUDIO')) {
-    xml = xml.replaceFirstMapped(
-        RegExp(r'<manifest[^>]*>'), (m) => '${m[0]}\n    $permissao');
-    print('✔ Permissão de microfone adicionada');
-  } else {
-    print('• Permissão de microfone já existia');
-  }
+  const permissoes = {
+    'RECORD_AUDIO': 'microfone (Analisador)',
+    'CAMERA': 'câmera (ler QR code)',
+  };
+  permissoes.forEach((nome, uso) {
+    if (!xml.contains('android.permission.$nome')) {
+      xml = xml.replaceFirstMapped(
+          RegExp(r'<manifest[^>]*>'),
+          (m) => '${m[0]}\n    <uses-permission android:name="android.permission.$nome"/>');
+      print('✔ Permissão de $uso adicionada');
+    } else {
+      print('• Permissão de $uso já existia');
+    }
+  });
   xml = xml.replaceFirst(
       RegExp(r'android:label="[^"]*"'), 'android:label="TeachEQ"');
   manifest.writeAsStringSync(xml);

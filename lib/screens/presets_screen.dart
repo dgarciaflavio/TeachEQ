@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../data/presets.dart';
+import '../logic/share_codec.dart';
 import '../state/app_state.dart';
 import '../widgets/mini_curve.dart';
+import 'qr_screens.dart';
 
 class PresetsScreen extends StatelessWidget {
   const PresetsScreen({super.key});
@@ -13,7 +15,21 @@ class PresetsScreen extends StatelessWidget {
     return ListenableBuilder(
       listenable: s,
       builder: (context, _) => Scaffold(
-        appBar: AppBar(title: const Text('Presets')),
+        appBar: AppBar(
+          title: const Text('Presets'),
+          actions: [
+            IconButton(
+              tooltip: 'Ler QR code',
+              icon: const Icon(Icons.qr_code_scanner),
+              onPressed: () => lerQrEImportar(context),
+            ),
+            IconButton(
+              tooltip: 'Colar código',
+              icon: const Icon(Icons.content_paste),
+              onPressed: () => colarCodigo(context),
+            ),
+          ],
+        ),
         body: ListView(
           padding: const EdgeInsets.all(12),
           children: [
@@ -59,6 +75,15 @@ class _CartaoPreset extends StatelessWidget {
                   child: Text(preset.nome,
                       style: Theme.of(context).textTheme.titleMedium),
                 ),
+                if (preset.personalizado)
+                  IconButton(
+                    tooltip: 'Compartilhar por QR code',
+                    icon: const Icon(Icons.qr_code),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) =>
+                          QrShowScreen(titulo: preset.nome, pacote: codificarPreset(preset)),
+                    )),
+                  ),
                 if (preset.personalizado)
                   IconButton(
                     tooltip: 'Excluir',

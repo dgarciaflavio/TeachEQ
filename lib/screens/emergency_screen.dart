@@ -5,6 +5,7 @@ import '../data/presets.dart';
 import '../models/models.dart';
 import '../state/app_state.dart';
 import 'analyzer_screen.dart';
+import 'channel_map_screen.dart';
 
 class EmergencyScreen extends StatelessWidget {
   const EmergencyScreen({super.key});
@@ -78,6 +79,16 @@ class _EmergencyDetailScreenState extends State<EmergencyDetailScreen> {
                 label: const Text('Achar a frequência com o Analisador'),
                 onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const AnalyzerScreen())),
+              ),
+            ),
+          if (e.categoria == Categoria.microfones)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.grid_view),
+                label: const Text('Ver no mapa qual canal é de qual microfone'),
+                onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ChannelMapScreen())),
               ),
             ),
           Text('Siga na ordem e marque o que já fez.',

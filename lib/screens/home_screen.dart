@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'analyzer_screen.dart';
+import 'channel_map_screen.dart';
 import 'checklist_screen.dart';
 import 'emergency_screen.dart';
 import 'eq_screen.dart';
@@ -9,6 +10,7 @@ import 'generator_screen.dart';
 import 'guide_screen.dart';
 import 'presets_screen.dart';
 import 'projects_screen.dart';
+import 'training_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -108,6 +110,18 @@ class HomeScreen extends StatelessWidget {
                 titulo: 'Gerador',
                 subtitulo: 'Ruído rosa e tons',
                 onTap: () => _abrir(context, const GeneratorScreen()),
+              ),
+              _Atalho(
+                icone: Icons.headphones,
+                titulo: 'Treino',
+                subtitulo: 'Treine o ouvido',
+                onTap: () => _abrir(context, const TrainingScreen()),
+              ),
+              _Atalho(
+                icone: Icons.grid_view,
+                titulo: 'Mapa da mesa',
+                subtitulo: 'O que vai em cada canal',
+                onTap: () => _abrir(context, const ChannelMapScreen()),
               ),
               _Atalho(
                 icone: Icons.tune_outlined,

@@ -88,6 +88,13 @@ class GeradorService {
     tocando = loop ? 'Tom ${hz.round()} Hz' : null;
   }
 
+  /// Toca um áudio qualquer gerado no app (ex.: exercício de treino).
+  Future<void> tocarAmostras(Float64List amostras, String rotulo,
+      {double volume = 0.6, bool loop = true}) async {
+    await _tocar(montarWav(amostras), loop: loop, volume: volume);
+    tocando = rotulo;
+  }
+
   Future<void> setVolume(double v) => _player.setVolume(v);
 
   Future<void> parar() async {

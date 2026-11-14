@@ -6,6 +6,14 @@ Pensado para eventos com **playback no computador** (canal estéreo), **até 6 m
 
 ## Funcionalidades
 
+### V3 — treino, compartilhamento e mapa da mesa
+- **Treino de ouvido**, com áudio gerado pelo próprio app (batida sintética ou ruído rosa, sem internet):
+  - **Ache a banda**: um slider foi mexido; compare original e alterado e diga qual banda e se foi reforço ou corte.
+  - **Conserte o som**: o som chega estragado em 1 a 3 bandas; mexa nos sliders até soar igual ao original. Nota de 0 a 100.
+  - Três níveis (±12, ±9, ±6 dB), modo "sem fone" (tira 63Hz e 150Hz, que o alto-falante do celular não toca) e placar com recorde.
+- **Compartilhar por QR code**: eventos (com EQ, mapa e anotações), presets e o mapa da mesa. O outro celular lê com a câmera. Também dá para copiar o código e mandar no WhatsApp.
+- **Mapa da mesa**: o que está ligado em cada canal (microfone, receptor, PC, plano B) e nas saídas. Vira texto para etiqueta, é salvo em cada evento e aparece como atalho nas emergências de microfone.
+
 ### V2 — o app escuta o som
 - **Detector de microfonia**: identifica o apito pelo microfone do celular, mostra a frequência e diz qual slider da mesa baixar (e quanto). Ignora voz, música com harmônicos e notas normais; só alerta para tom puro, parado na mesma frequência e crescendo (ou parado por quase 2 s).
 - **Histórico de microfonias**: na passagem de som, cada apito encontrado vira uma lista copiável para as anotações do evento.
@@ -32,7 +40,7 @@ Pré-requisito: [Flutter](https://docs.flutter.dev/get-started/install) instalad
 # 1. Gere a pasta android/ (não sobrescreve os arquivos existentes)
 flutter create . --project-name teacheq --org br.com.teacheq --platforms android
 
-# 2. Ajuste o Android: permissão de microfone, minSdk 23 e nome do app
+# 2. Ajuste o Android: permissões de microfone e câmera, minSdk 23 e nome do app
 dart run tool/configurar_android.dart
 
 # 3. Dependências e testes
@@ -62,9 +70,14 @@ lib/
     feedback_detector.dart     Detector de microfonia
     audio_math.dart            Bandas da mesa, ponderação A, sugestão de EQ
     signal_generator.dart      Ruído rosa, tons e WAV
+    eq_filter.dart             Filtros do equalizador (para o treino)
+    training_audio.dart        Áudios de treino gerados no app
     audio_services.dart        Microfone (record) e reprodução (audioplayers)
   data/                        Conteúdo: bandas, presets, emergências, checklist
-  logic/eq_analyzer.dart       Alertas da curva do equalizador
+  logic/
+    eq_analyzer.dart           Alertas da curva do equalizador
+    training.dart              Exercícios e pontuação do treino
+    share_codec.dart           Códigos de compartilhamento (QR e texto)
   models/ state/               Dados e armazenamento local
   screens/ widgets/            Telas e componentes
 tool/configurar_android.dart   Ajustes do Android após o flutter create
@@ -73,4 +86,4 @@ test/                          Testes do áudio, do analisador de curva e da tel
 
 ## Próxima fase
 
-- **V3**: modo treino (corrigir um áudio "estragado" no EQ virtual), compartilhamento por QR code, mapa de canais da mesa, outros modelos de mesa.
+- **Outros modelos de mesa** (equalizadores de 9 ou mais bandas): fica para quando houver necessidade, porque exige tornar o número de bandas variável em todo o app.

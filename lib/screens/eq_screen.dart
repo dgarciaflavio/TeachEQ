@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../data/bands.dart';
+import '../data/presets.dart';
 import '../logic/eq_analyzer.dart';
+import '../logic/share_codec.dart';
 import '../models/models.dart';
 import '../state/app_state.dart';
 import '../widgets/eq_bank_panel.dart';
 import '../widgets/mini_curve.dart';
 import 'guide_screen.dart';
+import 'qr_screens.dart';
 
 class EqScreen extends StatefulWidget {
   const EqScreen({super.key});
@@ -42,11 +45,27 @@ class _EqScreenState extends State<EqScreen> {
                 onSelected: (op) {
                   if (op == 'zerar') _s.zerar(_banco);
                   if (op == 'salvar') _salvarComoPreset(valores);
+                  if (op == 'qr') {
+                    final nome = 'EQ do banco de ${_banco == 0 ? 'cima' : 'baixo'}';
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => QrShowScreen(
+                        titulo: nome,
+                        pacote: codificarPreset(Preset(
+                          id: 'qr',
+                          nome: nome,
+                          quando: 'Recebido por QR code',
+                          valores: List<double>.of(valores),
+                        )),
+                      ),
+                    ));
+                  }
                 },
                 itemBuilder: (_) => const [
                   PopupMenuItem(value: 'zerar', child: Text('Zerar este banco')),
                   PopupMenuItem(
                       value: 'salvar', child: Text('Salvar como preset')),
+                  PopupMenuItem(
+                      value: 'qr', child: Text('Compartilhar por QR code')),
                 ],
               ),
             ],

@@ -27,6 +27,17 @@ class AppState extends ChangeNotifier {
   static const double offsetPadrao = 130;
   double offsetCalibracao = offsetPadrao;
 
+  /// Mapa de canais atual da mesa.
+  MapaMesa mapa = MapaMesa();
+  static const _kMapa = 'mapa';
+
+  /// Placar do modo treino.
+  int treinoAcertos = 0;
+  int treinoTentativas = 0;
+  int treinoSequencia = 0;
+  int treinoMelhorSequencia = 0;
+
+  static const _kTreino = 'treino';
   static const _kOffset = 'offsetCalibracao';
   static const _kBancos = 'bancos';
   static const _kFuncoes = 'funcoes';
@@ -57,6 +68,15 @@ class AppState extends ChangeNotifier {
       }
       espelhar = p.getBool(_kEspelhar) ?? false;
       offsetCalibracao = p.getDouble(_kOffset) ?? offsetPadrao;
+      final m = p.getString(_kMapa);
+      if (m != null) mapa = MapaMesa.fromJson(jsonDecode(m) as Map<String, dynamic>);
+      final t = p.getStringList(_kTreino);
+      if (t != null && t.length == 4) {
+        treinoAcertos = int.tryParse(t[0]) ?? 0;
+        treinoTentativas = int.tryParse(t[1]) ?? 0;
+        treinoSequencia = int.tryParse(t[2]) ?? 0;
+        treinoMelhorSequencia = int.tryParse(t[3]) ?? 0;
+      }
       final pr = p.getString(_kProjetos);
       if (pr != null) {
         projetos
@@ -87,6 +107,13 @@ class AppState extends ChangeNotifier {
     await p.setStringList(_kFuncoes, funcoes.map((e) => e.name).toList());
     await p.setBool(_kEspelhar, espelhar);
     await p.setDouble(_kOffset, offsetCalibracao);
+    await p.setString(_kMapa, jsonEncode(mapa.toJson()));
+    await p.setStringList(_kTreino, [
+      '$treinoAcertos',
+      '$treinoTentativas',
+      '$treinoSequencia',
+      '$treinoMelhorSequencia',
+    ]);
     await p.setString(
         _kProjetos, jsonEncode(projetos.map((e) => e.toJson()).toList()));
     await p.setString(_kPresets,
@@ -125,6 +152,39 @@ class AppState extends ChangeNotifier {
   int? get bancoDoPa {
     final i = funcoes.indexOf(FuncaoBanco.pa);
     return i >= 0 ? i : null;
+  }
+
+  // ---------- Mapa de canais ----------
+
+  void atualizarMapa() => _mudou();
+
+  void substituirMapa(MapaMesa novo) {
+    mapa = novo.copia();
+    _mudou();
+  }
+
+  // ---------- Treino ----------
+
+  void registrarTreino(bool acertou) {
+    treinoTentativas++;
+    if (acertou) {
+      treinoAcertos++;
+      treinoSequencia++;
+      if (treinoSequencia > treinoMelhorSequencia) {
+        treinoMelhorSequencia = treinoSequencia;
+      }
+    } else {
+      treinoSequencia = 0;
+    }
+    _mudou();
+  }
+
+  void zerarTreino() {
+    treinoAcertos = 0;
+    treinoTentativas = 0;
+    treinoSequencia = 0;
+    treinoMelhorSequencia = 0;
+    _mudou();
   }
 
   void setOffsetCalibracao(double v) {
@@ -172,6 +232,7 @@ class AppState extends ChangeNotifier {
       local: local,
       eqCima: List<double>.of(bancos[0]),
       eqBaixo: List<double>.of(bancos[1]),
+      mapa: mapa.emUso > 0 ? mapa.copia() : null,
     );
     projetos.insert(0, p);
     _mudou();
@@ -179,6 +240,12 @@ class AppState extends ChangeNotifier {
   }
 
   void atualizarProjeto() => _mudou();
+
+  /// Adiciona um evento recebido de outro celular.
+  void adicionarProjeto(Projeto p) {
+    projetos.insert(0, p);
+    _mudou();
+  }
 
   void excluirProjeto(String id) {
     projetos.removeWhere((p) => p.id == id);
@@ -205,25 +272,6 @@ class AppState extends ChangeNotifier {
       if (p.id != exceto && p.local.trim().toLowerCase() == alvo) return p;
     }
     return null;
-  }
-
-  String exportarProjetoJson(Projeto p) =>
-      const JsonEncoder.withIndent('  ').convert(p.toJson());
-
-  /// Importa um projeto colado como texto JSON. Retorna null se inválido.
-  Projeto? importarProjetoJson(String texto) {
-    try {
-      final j = jsonDecode(texto) as Map<String, dynamic>;
-      final p = Projeto.fromJson({
-        ...j,
-        'id': 'e${DateTime.now().millisecondsSinceEpoch}',
-      });
-      projetos.insert(0, p);
-      _mudou();
-      return p;
-    } catch (_) {
-      return null;
-    }
   }
 
   // ---------- Checklist ----------
