@@ -1,11 +1,15 @@
 name: Gerar APK
 
-# Compila o TeachEQ a cada envio para a main (ou manualmente na aba Actions).
-# O APK fica em "Artifacts" na página da execução.
+# Compila o TeachEQ a cada envio para a main (ou manualmente na aba Actions)
+# e publica o APK como Release. Link fixo para a versão mais nova:
+# https://github.com/dgarciaflavio/TeachEQ/releases/latest/download/TeachEQ.apk
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   apk:
@@ -45,9 +49,23 @@ jobs:
       - name: Compilar APK
         run: flutter build apk --release
 
-      - name: Publicar APK
+      - name: Publicar APK (artefato)
         uses: actions/upload-artifact@v4
         with:
           name: TeachEQ-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+      - name: Publicar Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk TeachEQ.apk
+          versao=$(grep '^version:' pubspec.yaml | cut -d' ' -f2 | cut -d+ -f1)
+          tag="v${versao}-build${{ github.run_number }}"
+          gh release create "$tag" TeachEQ.apk \
+            --title "TeachEQ ${versao} (build ${{ github.run_number }})" \
+            --notes "APK gerado automaticamente a partir do commit ${GITHUB_SHA::7}.
+
+          Para instalar: abra o arquivo no celular e permita instalar de fontes desconhecidas quando o Android pedir." \
+            --latest
