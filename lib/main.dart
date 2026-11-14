@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'state/app_state.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,23 +12,18 @@ Future<void> main() async {
 }
 
 class TeachEqApp extends StatelessWidget {
-  const TeachEqApp({super.key});
+  const TeachEqApp({super.key, this.comAbertura = true});
+
+  /// Mostra a animação de abertura (desligada nos testes).
+  final bool comAbertura;
 
   @override
   Widget build(BuildContext context) {
-    // Tema escuro: ambiente de evento costuma ter pouca luz.
-    final esquema = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF1D9E75),
-      brightness: Brightness.dark,
-    );
     return MaterialApp(
       title: 'TeachEQ',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: esquema,
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
+      theme: temaTeachEq(),
+      home: comAbertura ? const SplashScreen() : const HomeScreen(),
     );
   }
 }

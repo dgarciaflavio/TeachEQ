@@ -35,7 +35,7 @@ Uint8List montarWav(Float64List amostras, {int sampleRate = taxaGerador}) {
 
 /// Ruído rosa (energia igual por oitava), método de Paul Kellet.
 /// Pico normalizado em [picoDbfs]. Bordas com fade curto para o loop não estalar.
-Float64List ruidoRosa({double segundos = 8, double picoDbfs = -6, int semente = 7}) {
+Float64List ruidoRosa({double segundos = 20, double picoDbfs = -6, int semente = 7}) {
   final n = (segundos * taxaGerador).round();
   final r = math.Random(semente);
   final out = Float64List(n);
@@ -52,7 +52,7 @@ Float64List ruidoRosa({double segundos = 8, double picoDbfs = -6, int semente = 
     b6 = white * 0.115926;
   }
   _normalizar(out, picoDbfs);
-  _fadeBordas(out, (0.01 * taxaGerador).round());
+  _fadeBordas(out, (0.04 * taxaGerador).round());
   return out;
 }
 
@@ -67,6 +67,15 @@ Float64List tomSenoidal(double hz, {double segundos = 2, double picoDbfs = -12})
   for (var i = 0; i < n; i++) {
     out[i] = amp * math.sin(2 * math.pi * f * i / taxaGerador);
   }
+  return out;
+}
+
+/// Tom longo para o gerador, com entrada e saída suaves. Começar um seno de
+/// repente gera um estalo (muito mais audível que o próprio tom em 63Hz e
+/// 150Hz, que o alto-falante do celular quase não reproduz).
+Float64List tomLongo(double hz, {double segundos = 30, double picoDbfs = -12}) {
+  final out = tomSenoidal(hz, segundos: segundos, picoDbfs: picoDbfs);
+  _fadeBordas(out, (0.04 * taxaGerador).round());
   return out;
 }
 

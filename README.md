@@ -32,7 +32,13 @@ Pensado para eventos com **playback no computador** (canal estéreo), **até 6 m
 - **Deu problema**: 14 roteiros passo a passo.
 - **Checklist** de montagem e passagem de som.
 
-## Como gerar o APK
+## Baixar o APK pronto
+
+Cada envio para a branch `main` gera um APK automaticamente (GitHub Actions). Link fixo para a versão mais nova:
+
+**https://github.com/dgarciaflavio/TeachEQ/releases/latest/download/TeachEQ.apk**
+
+## Como gerar o APK no seu computador
 
 Pré-requisito: [Flutter](https://docs.flutter.dev/get-started/install) instalado (com Android SDK).
 
@@ -43,8 +49,10 @@ flutter create . --project-name teacheq --org br.com.teacheq --platforms android
 # 2. Ajuste o Android: permissões de microfone e câmera, minSdk 23 e nome do app
 dart run tool/configurar_android.dart
 
-# 3. Dependências e testes
+# 3. Dependências, ícone, tela de abertura e testes
 flutter pub get
+dart run flutter_launcher_icons
+dart run flutter_native_splash:create
 flutter test
 
 # 4. Gere o APK

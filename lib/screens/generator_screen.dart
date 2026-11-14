@@ -19,6 +19,13 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
   double _volume = 0.5;
   double _posLivre = 0.5; // 0..1 em escala log de 40 Hz a 16 kHz
 
+  /// Tom abaixo de 200 Hz tocando (rótulos como "Tom 63 Hz").
+  bool _tomGrave(String? tocando) {
+    if (tocando == null || !tocando.startsWith('Tom ')) return false;
+    final hz = int.tryParse(tocando.split(' ')[1]);
+    return hz != null && hz < 200;
+  }
+
   // O sinal continua tocando ao sair desta tela, para medir no Analisador.
   double get _hzLivre => 40 * math.pow(400, _posLivre).toDouble();
 
@@ -125,6 +132,27 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
                 ),
             ],
           ),
+          if (_tomGrave(tocando))
+            Card(
+              margin: const EdgeInsets.only(top: 10),
+              color: cs.secondaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(Icons.headphones, color: cs.onSecondaryContainer),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'O alto-falante do celular quase não reproduz graves abaixo de 200 Hz. '
+                        'Se não ouvir nada, é normal: use fone de ouvido ou o cabo na mesa.',
+                        style: TextStyle(color: cs.onSecondaryContainer),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           const SizedBox(height: 16),
           Text('Frequência livre', style: Theme.of(context).textTheme.titleMedium),
           Slider(

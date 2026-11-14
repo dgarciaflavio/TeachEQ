@@ -83,7 +83,7 @@ class GeradorService {
   Future<void> tocarTom(double hz, {double volume = 0.5, bool loop = true}) async {
     final chave = hz.round() * (loop ? 1 : -1);
     final wav = _tomCache[chave] ??=
-        montarWav(loop ? tomSenoidal(hz) : tomCurto(hz));
+        montarWav(loop ? tomLongo(hz) : tomCurto(hz));
     await _tocar(wav, loop: loop, volume: volume);
     tocando = loop ? 'Tom ${hz.round()} Hz' : null;
   }
@@ -95,15 +95,33 @@ class GeradorService {
     tocando = rotulo;
   }
 
-  Future<void> setVolume(double v) => _player.setVolume(v);
+  double _volume = 0.5;
+
+  Future<void> setVolume(double v) {
+    _volume = v;
+    return _player.setVolume(v);
+  }
 
   Future<void> parar() async {
     tocando = null;
+    await _pararSuave();
+  }
+
+  /// Baixa o volume em poucos passos antes de parar: cortar o som no meio
+  /// da onda gera um estalo.
+  Future<void> _pararSuave() async {
+    if (_player.state == PlayerState.playing) {
+      for (final f in const [0.6, 0.35, 0.15, 0.05]) {
+        await _player.setVolume(_volume * f);
+        await Future<void>.delayed(const Duration(milliseconds: 15));
+      }
+    }
     await _player.stop();
   }
 
   Future<void> _tocar(Uint8List wav, {required bool loop, required double volume}) async {
-    await _player.stop();
+    await _pararSuave();
+    _volume = volume;
     await _player.setReleaseMode(loop ? ReleaseMode.loop : ReleaseMode.stop);
     await _player.setVolume(volume);
     await _player.play(BytesSource(wav));
