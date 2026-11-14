@@ -18,6 +18,7 @@ void main() {
   testWidgets('abertura animada termina na tela inicial', (tester) async {
     await tester.pumpWidget(const TeachEqApp());
     expect(find.text('Deu problema'), findsNothing);
+    await tester.pump(); // primeiro quadro: a animação começa a contar aqui
     await tester.pump(const Duration(milliseconds: 2100)); // animação
     await tester.pump(const Duration(milliseconds: 300)); // pausa final
     await tester.pumpAndSettle(); // transição
