@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../data/presets.dart';
@@ -62,10 +64,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         )),
     ];
     _texto = CurvedAnimation(parent: _c, curve: const Interval(0.62, 0.9, curve: Curves.easeOut));
-    _c.forward().whenComplete(() {
-      Future<void>.delayed(const Duration(milliseconds: 250), _sair);
+    _c.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // Pequena pausa com o nome na tela antes de entrar no app.
+        _espera = Timer(const Duration(milliseconds: 250), _sair);
+      }
     });
+    _c.forward();
   }
+
+  Timer? _espera;
 
   @override
   void didChangeDependencies() {
@@ -88,6 +96,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   void dispose() {
+    _espera?.cancel();
     _c.dispose();
     super.dispose();
   }
