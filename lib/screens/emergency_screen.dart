@@ -4,6 +4,7 @@ import '../data/emergencies.dart';
 import '../data/presets.dart';
 import '../models/models.dart';
 import '../state/app_state.dart';
+import 'analyzer_screen.dart';
 
 class EmergencyScreen extends StatelessWidget {
   const EmergencyScreen({super.key});
@@ -69,6 +70,16 @@ class _EmergencyDetailScreenState extends State<EmergencyDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 32),
         children: [
+          if (e.id == 'microfonia' || e.id == 'retorno_fraco')
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: FilledButton.icon(
+                icon: const Icon(Icons.mic),
+                label: const Text('Achar a frequência com o Analisador'),
+                onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AnalyzerScreen())),
+              ),
+            ),
           Text('Siga na ordem e marque o que já fez.',
               style: TextStyle(color: cs.onSurfaceVariant)),
           const SizedBox(height: 8),

@@ -22,6 +22,12 @@ class AppState extends ChangeNotifier {
   final List<Preset> presetsPersonalizados = [];
   final Set<String> checklistMarcados = {};
 
+  /// Soma em dB para converter dBFS do microfone em dB SPL estimado.
+  /// Varia de celular para celular; o usuário pode calibrar.
+  static const double offsetPadrao = 130;
+  double offsetCalibracao = offsetPadrao;
+
+  static const _kOffset = 'offsetCalibracao';
   static const _kBancos = 'bancos';
   static const _kFuncoes = 'funcoes';
   static const _kEspelhar = 'espelhar';
@@ -50,6 +56,7 @@ class AppState extends ChangeNotifier {
         }
       }
       espelhar = p.getBool(_kEspelhar) ?? false;
+      offsetCalibracao = p.getDouble(_kOffset) ?? offsetPadrao;
       final pr = p.getString(_kProjetos);
       if (pr != null) {
         projetos
@@ -79,6 +86,7 @@ class AppState extends ChangeNotifier {
     await p.setString(_kBancos, jsonEncode(bancos));
     await p.setStringList(_kFuncoes, funcoes.map((e) => e.name).toList());
     await p.setBool(_kEspelhar, espelhar);
+    await p.setDouble(_kOffset, offsetCalibracao);
     await p.setString(
         _kProjetos, jsonEncode(projetos.map((e) => e.toJson()).toList()));
     await p.setString(_kPresets,
@@ -108,6 +116,21 @@ class AppState extends ChangeNotifier {
   }
 
   void zerar(int banco) => aplicarValores(banco, eqPlano());
+
+  /// Soma [delta] dB a uma banda (ex.: −3 para baixar onde houve microfonia).
+  void ajustarBanda(int banco, int banda, double delta) =>
+      setBanda(banco, banda, bancos[banco][banda] + delta);
+
+  /// Banco marcado como PA, se o usuário já informou.
+  int? get bancoDoPa {
+    final i = funcoes.indexOf(FuncaoBanco.pa);
+    return i >= 0 ? i : null;
+  }
+
+  void setOffsetCalibracao(double v) {
+    offsetCalibracao = v;
+    _mudou();
+  }
 
   void setFuncao(int banco, FuncaoBanco f) {
     funcoes[banco] = f;

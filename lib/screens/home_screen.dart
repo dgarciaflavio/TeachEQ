@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'analyzer_screen.dart';
 import 'checklist_screen.dart';
 import 'emergency_screen.dart';
 import 'eq_screen.dart';
+import 'gain_screen.dart';
+import 'generator_screen.dart';
 import 'guide_screen.dart';
 import 'presets_screen.dart';
 import 'projects_screen.dart';
@@ -65,6 +68,12 @@ class HomeScreen extends StatelessWidget {
             childAspectRatio: 1.15,
             children: [
               _Atalho(
+                icone: Icons.mic,
+                titulo: 'Analisador',
+                subtitulo: 'Microfonia, dB e sala',
+                onTap: () => _abrir(context, const AnalyzerScreen()),
+              ),
+              _Atalho(
                 icone: Icons.equalizer,
                 titulo: 'Equalizador',
                 subtitulo: 'Simule a mesa',
@@ -93,6 +102,18 @@ class HomeScreen extends StatelessWidget {
                 titulo: 'Checklist',
                 subtitulo: 'Montagem e passagem',
                 onTap: () => _abrir(context, const ChecklistScreen()),
+              ),
+              _Atalho(
+                icone: Icons.surround_sound_outlined,
+                titulo: 'Gerador',
+                subtitulo: 'Ruído rosa e tons',
+                onTap: () => _abrir(context, const GeneratorScreen()),
+              ),
+              _Atalho(
+                icone: Icons.tune_outlined,
+                titulo: 'Ganho certo',
+                subtitulo: 'Volume na ordem certa',
+                onTap: () => _abrir(context, const GainScreen()),
               ),
             ],
           ),

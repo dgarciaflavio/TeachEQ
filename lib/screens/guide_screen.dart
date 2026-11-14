@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../audio/audio_math.dart';
+import '../audio/audio_services.dart';
 import '../data/bands.dart';
 
 /// Guia das 7 frequências, da esquerda para a direita como na mesa.
@@ -57,6 +59,21 @@ class _GuideScreenState extends State<GuideScreen> {
                     Text(b.rotulo, style: Theme.of(context).textTheme.headlineMedium),
                     Text('${b.apelido} · ${b.regiao}',
                         style: TextStyle(color: cs.primary, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.hearing),
+                        label: const Text('Ouvir esta frequência'),
+                        onPressed: () => GeradorService.instance
+                            .tocarTom(centrosBandas[i], volume: 0.4, loop: false),
+                      ),
+                    ),
+                    if (i <= 1)
+                      Text(
+                        'Use fone de ouvido: o alto-falante do celular não reproduz graves tão baixos.',
+                        style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
+                      ),
                     const SizedBox(height: 16),
                     _Secao('O que é', b.oQueE, Icons.info_outline),
                     _Secao('Soa como', b.soaComo, Icons.hearing),
